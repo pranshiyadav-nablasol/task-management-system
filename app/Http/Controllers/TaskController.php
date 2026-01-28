@@ -47,7 +47,8 @@ class TaskController extends Controller
 
         // Pagination - 10 items per page (you can change to 15, 20, etc.)
         $tasks = $query->paginate(10);
-
+        $perPage = $request->input('per_page', 10);
+        $tasks = $query->paginate($perPage)->appends($request->query());
         // Preserve all query parameters (filters + sorting + page) in pagination links
         $tasks->appends($request->query());
 

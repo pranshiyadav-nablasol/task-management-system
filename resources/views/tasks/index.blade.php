@@ -58,7 +58,11 @@
                                 </select>
                             </div>
                         </div>
-
+                        <select name="per_page">
+                            <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10 per page</option>
+                            <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 per page</option>
+                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 per page</option>
+                        </select>
                         <div class="mt-4 flex justify-end gap-3">
                             <a href="{{ route('tasks.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-sm">
                                 Reset
@@ -85,6 +89,9 @@
                         </p>
                     @else
                         <!-- Existing table code remains here -->
+                        <p class="text-sm text-gray-600 mb-4">
+                                Showing {{ $tasks->firstItem() }}–{{ $tasks->lastItem() }} of {{ $tasks->total() }} tasks
+                            </p>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
