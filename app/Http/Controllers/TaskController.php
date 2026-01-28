@@ -11,7 +11,7 @@ use Illuminate\View\View;
 class TaskController extends Controller
 {
     /**
- * Display a listing of the authenticated user's tasks with sorting & filtering.
+ * Display a listing of the authenticated user's tasks with sorting, filtering & pagination.
  */
     public function index(Request $request): View
     {
@@ -31,25 +31,26 @@ class TaskController extends Controller
         }
 
         // Sorting
-        $sortBy    = $request->input('sort_by', 'created_at');     // default: newest first
+        $sortBy = $request->input('sort_by', 'created_at');
         $sortDirection = $request->input('sort_direction', 'desc');
 
-        // Validate sort field to prevent injection
         $allowedSorts = ['title', 'status', 'due_date', 'created_at'];
         if (!in_array($sortBy, $allowedSorts)) {
             $sortBy = 'created_at';
         }
 
-        // Special handling for due_date NULLs (push nulls to end)
         if ($sortBy === 'due_date') {
             $query->orderByRaw("ISNULL(due_date) ASC, due_date {$sortDirection}");
         } else {
             $query->orderBy($sortBy, $sortDirection);
         }
 
-        $tasks = $query->get();
+        // Pagination - 10 items per page (you can change to 15, 20, etc.)
+        $tasks = $query->paginate(10);
 
-        // Pass current filters to view for selected values
+        // Preserve all query parameters (filters + sorting + page) in pagination links
+        $tasks->appends($request->query());
+
         return view('tasks.index', compact('tasks'))
             ->with('filters', $request->only(['status', 'search', 'sort_by', 'sort_direction']));
     }
