@@ -10,14 +10,48 @@ use Illuminate\View\View;
 
 class TaskController extends Controller
 {
-    public function index(): View
+    /**
+ * Display a listing of the authenticated user's tasks with sorting & filtering.
+ */
+    public function index(Request $request): View
     {
-        $tasks = Auth::user()
-            ->tasks()
-            ->latest()
-            ->get();
+        $query = Auth::user()->tasks();
 
-        return view('tasks.index', compact('tasks'));
+        // Filtering
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('search')) {
+            $search = '%' . $request->search . '%';
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', $search)
+                ->orWhere('description', 'like', $search);
+            });
+        }
+
+        // Sorting
+        $sortBy    = $request->input('sort_by', 'created_at');     // default: newest first
+        $sortDirection = $request->input('sort_direction', 'desc');
+
+        // Validate sort field to prevent injection
+        $allowedSorts = ['title', 'status', 'due_date', 'created_at'];
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'created_at';
+        }
+
+        // Special handling for due_date NULLs (push nulls to end)
+        if ($sortBy === 'due_date') {
+            $query->orderByRaw("ISNULL(due_date) ASC, due_date {$sortDirection}");
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
+        $tasks = $query->get();
+
+        // Pass current filters to view for selected values
+        return view('tasks.index', compact('tasks'))
+            ->with('filters', $request->only(['status', 'search', 'sort_by', 'sort_direction']));
     }
 
     public function create(): View

@@ -5,13 +5,84 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <div class="flex justify-between items-center mb-6">
-                        <h1 class="text-2xl font-bold">My Tasks</h1>
-                        <a href="{{ route('tasks.create') }}"
-                           class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                            Create New Task
-                        </a>
-                    </div>
+                    <div class="p-6 text-gray-900">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                            <h1 class="text-2xl font-bold">My Tasks</h1>
+                            <a href="{{ route('tasks.create') }}"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap">
+                                Create New Task
+                            </a>
+                        </div>
+
+                        <!-- Filters & Sorting Form -->
+                        <form method="GET" action="{{ route('tasks.index') }}" class="mb-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <!-- Search -->
+                                <div>
+                                    <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                                    <input type="text" name="search" id="search" value="{{ $filters['search'] ?? '' }}"
+                                        placeholder="Title or description..." 
+                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                </div>
+
+                                <!-- Status Filter -->
+                                <div>
+                                    <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                    <select name="status" id="status" 
+                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                        <option value="all" {{ ($filters['status'] ?? 'all') === 'all' ? 'selected' : '' }}>All</option>
+                                        <option value="Pending" {{ ($filters['status'] ?? '') === 'Pending' ? 'selected' : '' }}>Pending</option>
+                                        <option value="In Progress" {{ ($filters['status'] ?? '') === 'In Progress' ? 'selected' : '' }}>In Progress</option>
+                                        <option value="Completed" {{ ($filters['status'] ?? '') === 'Completed' ? 'selected' : '' }}>Completed</option>
+                                    </select>
+                                </div>
+
+                                <!-- Sort By -->
+                                <div>
+                                    <label for="sort_by" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                                    <select name="sort_by" id="sort_by" 
+                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                        <option value="created_at" {{ ($filters['sort_by'] ?? 'created_at') === 'created_at' ? 'selected' : '' }}>Created Date</option>
+                                        <option value="title" {{ ($filters['sort_by'] ?? '') === 'title' ? 'selected' : '' }}>Title</option>
+                                        <option value="status" {{ ($filters['sort_by'] ?? '') === 'status' ? 'selected' : '' }}>Status</option>
+                                        <option value="due_date" {{ ($filters['sort_by'] ?? '') === 'due_date' ? 'selected' : '' }}>Due Date</option>
+                                    </select>
+                                </div>
+
+                                <!-- Sort Direction -->
+                                <div>
+                                    <label for="sort_direction" class="block text-sm font-medium text-gray-700 mb-1">Direction</label>
+                                    <select name="sort_direction" id="sort_direction" 
+                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                        <option value="desc" {{ ($filters['sort_direction'] ?? 'desc') === 'desc' ? 'selected' : '' }}>Descending</option>
+                                        <option value="asc" {{ ($filters['sort_direction'] ?? '') === 'asc' ? 'selected' : '' }}>Ascending</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 flex justify-end gap-3">
+                                <a href="{{ route('tasks.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-sm">
+                                    Reset
+                                </a>
+                                <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium">
+                                    Apply Filters
+                                </button>
+                            </div>
+                        </form>
+
+    @if (session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6" role="alert">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <!-- Existing table code remains here -->
+    @if ($tasks->isEmpty())
+        <p class="text-gray-500 text-center py-8">No tasks found matching your filters.</p>
+    @else
+        <!-- ... your existing table ... -->
+    @endif
+</div>
 
                     @if (session('success'))
                         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6" role="alert">
